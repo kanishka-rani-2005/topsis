@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "topsis-kanishka-102317165"   
+version = "0.0.1"
+authors = [
+  { name="Kanishka Rani", email="krani_be23@thapar.edu"}
+]
+description = "TOPSIS implementation in Python"
+readme = "README.md"
+requires-python = ">=3.7"
+license = {text = "MIT"}
+
+dependencies = [
+    "pandas",
+    "numpy"
+]
+
+[project.scripts]
+topsis = "topsis_kanishka_102317165.cli:main"
+
