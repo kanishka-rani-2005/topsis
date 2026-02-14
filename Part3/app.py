@@ -7,6 +7,8 @@ from flask import Flask, render_template, request
 import smtplib
 from email.message import EmailMessage
 from dotenv import load_dotenv
+from flask import send_file
+
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))

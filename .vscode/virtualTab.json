@@ -5,7 +5,8 @@
     "files": [
       "Part3/requirements.txt",
       "Part3/templates/index.html",
-      "Part3/app.py"
+      "Part3/app.py",
+      "Part3/.env"
     ],
     "builtIn": true,
     "bookmarks": {}
