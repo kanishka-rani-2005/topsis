@@ -103,23 +103,38 @@ def send_email(receiver_email, attachment_path):
         APP_PASSWORD = os.getenv("EMAIL_PASSWORD")
 
         if not SENDER_EMAIL or not APP_PASSWORD:
-            print("ERROR: Email credentials missing in Render Environment Variables.")
+            print("ERROR: Environment variables EMAIL or EMAIL_PASSWORD are not set on Render.")
             return
 
-        # ... (rest of your message setup) ...
+        msg = EmailMessage()
+        msg["Subject"] = "TOPSIS Result File"
+        msg["From"] = SENDER_EMAIL
+        msg["To"] = receiver_email
+        msg.set_content("Your TOPSIS result file is attached.")
 
-        # Hardcode Gmail for a moment to test connection
-        print(f"Attempting to connect to Gmail SMTP for {receiver_email}...")
-        with smtplib.SMTP("smtp.gmail.com", 587, timeout=30) as smtp:
-            smtp.starttls() # Secure the connection
+        with open(attachment_path, "rb") as f:
+            msg.add_attachment(
+                f.read(),
+                maintype="application",
+                subtype="octet-stream",
+                filename=os.path.basename(attachment_path)
+            )
+
+        # Port 587 with starttls is generally most reliable on cloud platforms like Render
+        print(f"Connecting to SMTP server for {receiver_email}...")
+        
+        # Use a generic approach that works for Gmail and Outlook on port 587
+        smtp_server = "smtp.gmail.com" if "gmail" in SENDER_EMAIL.lower() else "smtp.office365.com"
+        
+        with smtplib.SMTP(smtp_server, 587, timeout=30) as smtp:
+            smtp.starttls()  # Upgrade the connection to secure
             smtp.login(SENDER_EMAIL, APP_PASSWORD)
             smtp.send_message(msg)
             
-        print("SUCCESS: Email sent successfully!")
+        print(f"SUCCESS: Email sent via {smtp_server}")
 
     except Exception as e:
         print(f"FATAL EMAIL ERROR: {str(e)}")
-
 def send_email_async(email, path):
     thread = threading.Thread(target=send_email, args=(email, path))
     thread.start()
