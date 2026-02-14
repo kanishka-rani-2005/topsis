@@ -129,21 +129,15 @@ def home():
 def submit():
     try:
         file = request.files.get("file")
-        weights = request.form.get("weights", "").strip()#remove leading/trailing spaces
+        weights = request.form.get("weights", "").strip()
         impacts = request.form.get("impacts", "").strip()
-        email = request.form.get("email", "").strip()
 
-        # validations
         if file is None or file.filename == "":
             return render_template("index.html", error="Please upload a CSV file.")
 
-        if not validate_email(email):
-            return render_template("index.html", error="Invalid Email format. Please enter a valid email address")
-
         if not file.filename.endswith(".csv"):
-            return render_template("index.html", error="Only CSV files are allowed. Please upload a valid CSV file")
+            return render_template("index.html", error="Only CSV files are allowed.")
 
-        # Save input file
         input_path = os.path.join(UPLOAD_FOLDER, file.filename)
         file.save(input_path)
 
@@ -152,9 +146,7 @@ def submit():
 
         topsis_calculate(input_path, weights, impacts, output_path)
 
-        send_email(email, output_path)
-
-        return render_template("index.html", message=" Result generated and sent to your email successfully.Please check your inbox.Thank you for using our service.Have a great day!")
+        return send_file(output_path, as_attachment=True)
 
     except Exception as e:
         return render_template("index.html", error=str(e))

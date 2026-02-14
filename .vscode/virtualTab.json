@@ -4,7 +4,8 @@
     "name": "Currently Open Files",
     "files": [
       "Part3/requirements.txt",
-      "Part3/templates/index.html"
+      "Part3/templates/index.html",
+      "Part3/app.py"
     ],
     "builtIn": true,
     "bookmarks": {}
