@@ -2,7 +2,10 @@
   {
     "id": "builtin_group_id",
     "name": "Currently Open Files",
-    "files": [],
+    "files": [
+      "Part3/requirements.txt",
+      "Part3/templates/index.html"
+    ],
     "builtIn": true,
     "bookmarks": {}
   }
