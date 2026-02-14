@@ -2,12 +2,7 @@
   {
     "id": "builtin_group_id",
     "name": "Currently Open Files",
-    "files": [
-      "Part1/topsis.py",
-      "Part3/app.py",
-      "Part2/requirements.txt",
-      "Part3/requirements.txt"
-    ],
+    "files": [],
     "builtIn": true,
     "bookmarks": {}
   }
