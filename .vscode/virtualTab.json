@@ -4,7 +4,9 @@
     "name": "Currently Open Files",
     "files": [
       "Part1/topsis.py",
-      "Part3/app.py"
+      "Part3/app.py",
+      "Part2/requirements.txt",
+      "Part3/requirements.txt"
     ],
     "builtIn": true,
     "bookmarks": {}
