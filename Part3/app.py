@@ -6,6 +6,11 @@ from flask import Flask, render_template, request
 
 import smtplib
 from email.message import EmailMessage
+from dotenv import load_dotenv
+
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+load_dotenv(dotenv_path=os.path.join(BASE_DIR, ".env"), override=True)
 
 
 app = Flask(__name__)
@@ -35,20 +40,20 @@ def topsis_calculate(input_file, weights_str, impacts_str, output_file):
         data[col] = pd.to_numeric(data[col], errors="coerce")
 
     if data.isnull().values.any():
-        raise Exception("From 2nd to last columns must contain numeric values only")
+        raise Exception("From 2nd to last columns must contain numeric values only. Please check your input file and try again.")
 
     # Split weights and impacts
     if "," not in weights_str or "," not in impacts_str:
-        raise Exception("Weights and Impacts must be separated by ',' (comma)")
+        raise Exception("Weights and Impacts must be separated by ',' (comma). Please check your input and try again.")
 
     weights = [w.strip() for w in weights_str.split(",")]
     impacts = [i.strip() for i in impacts_str.split(",")]
 
     if len(weights) != len(impacts):
-        raise Exception("Number of weights must be equal to number of impacts")
+        raise Exception("Number of weights must be equal to number of impacts.Please check your input and try again.")
 
     if len(weights) != data.shape[1]:
-        raise Exception("Number of weights and impacts must match criteria columns")
+        raise Exception("Number of weights and impacts must match criteria columns.Please check your input file and try again.")
 
     # Validate weights numeric
     try:
@@ -56,7 +61,7 @@ def topsis_calculate(input_file, weights_str, impacts_str, output_file):
     except:
         raise Exception("Weights must be numeric values")
 
-    # Validate impacts +/-
+    # check valid signs in impacts
     for i in impacts:
         if i not in ["+", "-"]:
             raise Exception("Impacts must be either + or -")
@@ -80,15 +85,14 @@ def topsis_calculate(input_file, weights_str, impacts_str, output_file):
         else:
             ideal_best[j] = weighted_data.iloc[:, j].min()
             ideal_worst[j] = weighted_data.iloc[:, j].max()
-
-    # Step 4: Distances
+    # Step 4: Distance to Ideal Best/Worst using euclidean distance
     dist_best = np.sqrt(((weighted_data - ideal_best) ** 2).sum(axis=1))
     dist_worst = np.sqrt(((weighted_data - ideal_worst) ** 2).sum(axis=1))
 
     # Step 5: Score
     score = dist_worst / (dist_best + dist_worst)
 
-    # Step 6: Rank
+    # Step 6: Calulate Rank
     df["Topsis Score"] = score
     df["Rank"] = df["Topsis Score"].rank(ascending=False, method="dense").astype(int)
 
@@ -96,15 +100,14 @@ def topsis_calculate(input_file, weights_str, impacts_str, output_file):
 
 
 def send_email(receiver_email, attachment_path):
-    # ✅ Use your Gmail App Password (NOT normal password)
-    SENDER_EMAIL = "rsingh7_be23@thapar.edu"
-    APP_PASSWORD = "qeha atat lroi zdzn"
+    SENDER_EMAIL = os.getenv("EMAIL")
+    APP_PASSWORD = os.getenv("EMAIL_PASSWORD")
 
     msg = EmailMessage()
     msg["Subject"] = "TOPSIS Result File"
     msg["From"] = SENDER_EMAIL
     msg["To"] = receiver_email
-    msg.set_content("Hello,\n\nYour TOPSIS result file is attached.\n\nThank you!")
+    msg.set_content("Hii,\n\nHope You are doing well.\n\n Your TOPSIS result file is attached.\n\nThank you for using our service!")
 
     with open(attachment_path, "rb") as f:
         file_data = f.read()
@@ -126,35 +129,32 @@ def home():
 def submit():
     try:
         file = request.files.get("file")
-        weights = request.form.get("weights", "").strip()
+        weights = request.form.get("weights", "").strip()#remove leading/trailing spaces
         impacts = request.form.get("impacts", "").strip()
         email = request.form.get("email", "").strip()
 
         # validations
         if file is None or file.filename == "":
-            return render_template("index.html", error="Please upload a CSV file")
+            return render_template("index.html", error="Please upload a CSV file.")
 
         if not validate_email(email):
-            return render_template("index.html", error="Invalid Email format")
+            return render_template("index.html", error="Invalid Email format. Please enter a valid email address")
 
         if not file.filename.endswith(".csv"):
-            return render_template("index.html", error="Only CSV files are allowed")
+            return render_template("index.html", error="Only CSV files are allowed. Please upload a valid CSV file")
 
         # Save input file
         input_path = os.path.join(UPLOAD_FOLDER, file.filename)
         file.save(input_path)
 
-        # Output file name
-        output_filename = "topsis_result.csv"
+        output_filename = "Result.csv"
         output_path = os.path.join(RESULT_FOLDER, output_filename)
 
-        # Run topsis
         topsis_calculate(input_path, weights, impacts, output_path)
 
-        # Send output file via email
         send_email(email, output_path)
 
-        return render_template("index.html", message="✅ Result generated and sent to your email successfully!")
+        return render_template("index.html", message=" Result generated and sent to your email successfully.Please check your inbox.Thank you for using our service.Have a great day!")
 
     except Exception as e:
         return render_template("index.html", error=str(e))

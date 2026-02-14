@@ -6,3 +6,6 @@ __pycache__/
 Part1/output.csv
 
 /Part2/topsis_kanishka_102317165.egg-info
+.env/
+env/
+.env

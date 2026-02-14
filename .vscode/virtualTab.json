@@ -4,8 +4,7 @@
     "name": "Currently Open Files",
     "files": [
       "Part1/topsis.py",
-      ".gitignore",
-      "Screenshots/image.png"
+      "Part3/app.py"
     ],
     "builtIn": true,
     "bookmarks": {}
