@@ -106,6 +106,8 @@ def send_email(receiver_email, attachment_path):
             print("Email credentials not configured.")
             return
 
+        domain = SENDER_EMAIL.split("@")[-1].lower()
+
         msg = EmailMessage()
         msg["Subject"] = "TOPSIS Result File"
         msg["From"] = SENDER_EMAIL
@@ -120,11 +122,41 @@ def send_email(receiver_email, attachment_path):
                 filename=os.path.basename(attachment_path)
             )
 
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
-            smtp.login(SENDER_EMAIL, APP_PASSWORD)
-            smtp.send_message(msg)
+        # ----------------------------
+        # SMTP Selection Based on Domain
+        # ----------------------------
 
-        print("Email sent successfully")
+        if domain == "gmail.com":
+            smtp_server = "smtp.gmail.com"
+            port = 465
+            use_ssl = True
+
+        elif domain in ["outlook.com", "hotmail.com", "live.com", "office365.com", "thapar.edu"]:
+            smtp_server = "smtp.office365.com"
+            port = 587
+            use_ssl = False
+
+        else:
+            # Default fallback (try Gmail style SSL)
+            smtp_server = "smtp.gmail.com"
+            port = 465
+            use_ssl = True
+
+        # ----------------------------
+        # Connect and Send
+        # ----------------------------
+
+        if use_ssl:
+            with smtplib.SMTP_SSL(smtp_server, port, timeout=20) as smtp:
+                smtp.login(SENDER_EMAIL, APP_PASSWORD)
+                smtp.send_message(msg)
+        else:
+            with smtplib.SMTP(smtp_server, port, timeout=20) as smtp:
+                smtp.starttls()
+                smtp.login(SENDER_EMAIL, APP_PASSWORD)
+                smtp.send_message(msg)
+
+        print("Email sent successfully via", smtp_server)
 
     except Exception as e:
         print("Email failed:", str(e))
