@@ -103,64 +103,22 @@ def send_email(receiver_email, attachment_path):
         APP_PASSWORD = os.getenv("EMAIL_PASSWORD")
 
         if not SENDER_EMAIL or not APP_PASSWORD:
-            print("Email credentials not configured.")
+            print("ERROR: Email credentials missing in Render Environment Variables.")
             return
 
-        domain = SENDER_EMAIL.split("@")[-1].lower()
+        # ... (rest of your message setup) ...
 
-        msg = EmailMessage()
-        msg["Subject"] = "TOPSIS Result File"
-        msg["From"] = SENDER_EMAIL
-        msg["To"] = receiver_email
-        msg.set_content("Your TOPSIS result file is attached.")
-
-        with open(attachment_path, "rb") as f:
-            msg.add_attachment(
-                f.read(),
-                maintype="application",
-                subtype="octet-stream",
-                filename=os.path.basename(attachment_path)
-            )
-
-        # ----------------------------
-        # SMTP Selection Based on Domain
-        # ----------------------------
-
-        if domain == "gmail.com":
-            smtp_server = "smtp.gmail.com"
-            port = 465
-            use_ssl = True
-
-        elif domain in ["outlook.com", "hotmail.com", "live.com", "office365.com", "thapar.edu"]:
-            smtp_server = "smtp.office365.com"
-            port = 587
-            use_ssl = False
-
-        else:
-            # Default fallback (try Gmail style SSL)
-            smtp_server = "smtp.gmail.com"
-            port = 465
-            use_ssl = True
-
-        # ----------------------------
-        # Connect and Send
-        # ----------------------------
-
-        if use_ssl:
-            with smtplib.SMTP_SSL(smtp_server, port, timeout=20) as smtp:
-                smtp.login(SENDER_EMAIL, APP_PASSWORD)
-                smtp.send_message(msg)
-        else:
-            with smtplib.SMTP(smtp_server, port, timeout=20) as smtp:
-                smtp.starttls()
-                smtp.login(SENDER_EMAIL, APP_PASSWORD)
-                smtp.send_message(msg)
-
-        print("Email sent successfully via", smtp_server)
+        # Hardcode Gmail for a moment to test connection
+        print(f"Attempting to connect to Gmail SMTP for {receiver_email}...")
+        with smtplib.SMTP("smtp.gmail.com", 587, timeout=30) as smtp:
+            smtp.starttls() # Secure the connection
+            smtp.login(SENDER_EMAIL, APP_PASSWORD)
+            smtp.send_message(msg)
+            
+        print("SUCCESS: Email sent successfully!")
 
     except Exception as e:
-        print("Email failed:", str(e))
-
+        print(f"FATAL EMAIL ERROR: {str(e)}")
 
 def send_email_async(email, path):
     thread = threading.Thread(target=send_email, args=(email, path))
